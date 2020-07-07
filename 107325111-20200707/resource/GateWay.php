@@ -57,8 +57,6 @@ try{
 	$decoded = JWT::decode($authorizationToken, $portal_publick_key, array($header['alg'])); //以公鑰驗證，驗證成功則回傳內容，驗證內容中已經包驗證payload內時間內容 iat、exp、ndf
 	$decoded_array = (array) $decoded;
 	//echo "\n" ."<<公鑰驗證成功>>". "\n" . "payload:" . "\n" . print_r($decoded_array, true) . "\n"; //payload內容
-			//由梓銨的網頁，登入portal(哲源)取得token，在連到resource(哲源、梓銨)
-			//echo "\n";
 			//echo "<<驗證resource網域>>";
 			if($payload['aud'] == $_SERVER['HTTP_HOST']){ //驗證resource網域
 				//echo "\n";
@@ -158,47 +156,116 @@ try{
 										} //取得scope.parameters
 										
 										if($scope_resourcetype == $request_resourcetype && $scope_resourcetype = $json_file['resourceType']){ //比對scope 與 json 的 resourceType
+											
 											//不同resourceType對應不同檢查
-											if($scope_resourcetype == 'MedicationRequest'){
-												$checkOn_parameters = 0;
-												for($z=0;$z<sizeof($scope_parameters);$z++){
-													if($scope_parameters[$z]['0'] == 'date'){ //驗證date	
-														if(substr($scope_parameters[$z]['1'],0,2) == 'gt'){ 
-															if(strtotime(substr($scope_parameters[$z]['1'],2))<=strtotime(substr($json_file['dosageInstruction']['timing']['event'],2))){
+											switch ($scope_resourcetype) {
+												case 'MedicationRequest':
+													$checkOn_parameters = 0;
+													for($z=0;$z<sizeof($scope_parameters);$z++){
+														switch ($scope_parameters[$z]['0']) {
+															case 'date' :
+																if(substr($scope_parameters[$z]['1'],0,2) == 'gt'){ 
+																	if(strtotime(substr($scope_parameters[$z]['1'],2))<=strtotime(substr($json_file['dosageInstruction']['timing']['event'],2))){
+																		$checkOn_parameters++;
+																	}
+																}else if(substr($scope_parameters[$z]['1'],0,2) == 'lt'){
+																	if(strtotime(substr($scope_parameters[$z]['1'],0,2))>=strtotime(substr($json_file['dosageInstruction']['timing']['event'],2))){
+																		$checkOn_parameters++;
+																	}
+																}
 																$checkOn_parameters++;
-															}
-														}else if(substr($scope_parameters[$z]['1'],0,2) == 'lt'){
-															if(strtotime(substr($scope_parameters[$z]['1'],0,2))>=strtotime(substr($json_file['dosageInstruction']['timing']['event'],2))){
-																$checkOn_parameters++;
-															}
-														}
-														$checkOn_parameters++;
-													}else if($scope_parameters[$z]['0'] == 'patient'){ //驗證patient
-														//檢查scope 病人內容(id是否一樣)、date是否在scope規定的範圍內
-														if($json_file['subject']['reference'] == 'Patient/'.$scope_parameters[$z]['1']){
-															$checkOn_parameters++;
+																break;
+															case 'patient' :
+																//檢查scope 病人內容(id是否一樣)、date是否在scope規定的範圍內
+																if($json_file['subject']['reference'] == 'Patient/'.$scope_parameters[$z]['1']){
+																	$checkOn_parameters++;
+																}
+																break;
+															case 'requester' :
+																if($json_file['requester']['reference'] == 'Practitioner/'.$scope_parameters[$z]['1']){
+																	$checkOn_parameters++;
+																}
+																break;
+															default :
+																break;
 														}
 													}
-												}
-												if($checkOn_parameters == (sizeof($scope_parameters))){
-													//PostAPI('http://203.64.84.213:8080/hapi-fhir-jpaserver/fhir/'.$json_file['resourceType'],$json_file);
-													echo $json_file['subject']['reference'];
-												}
-											}else if($scope_resourcetype == 'MedicationAdministration'){
-											
-											}else if($scope_resourcetype == 'Observation'){
-											
+													if($checkOn_parameters == (sizeof($scope_parameters))){
+														PostAPI('http://203.64.84.213:8080/hapi-fhir-jpaserver/fhir/'.$json_file['resourceType'],$json_file);
+														//當前socpe參數驗證結束，上傳fhir
+														//print_r($json_file);
+													}
+													break;
+												case 'MedicationAdministration':
+													$checkOn_parameters = 0;
+													for($z=0;$z<sizeof($scope_parameters);$z++){
+														switch ($scope_parameters[$z]['0']) {
+															case 'effective-DateTime' :
+																if(substr($scope_parameters[$z]['1'],0,2) == 'gt'){ 
+																	if(strtotime(substr($scope_parameters[$z]['1'],2))<=strtotime(substr($json_file['effectiveDateTime'],2))){
+																		$checkOn_parameters++;
+																	}
+																}else if(substr($scope_parameters[$z]['1'],0,2) == 'lt'){
+																	if(strtotime(substr($scope_parameters[$z]['1'],0,2))>=strtotime(substr($json_file['effectiveDateTime'],2))){
+																		$checkOn_parameters++;
+																	}
+																}
+																$checkOn_parameters++;
+																break;
+															case 'patient' :
+																//檢查scope 病人內容(id是否一樣)、date是否在scope規定的範圍內
+																if('Patient/'.$scope_parameters[$z]['1'] == $json_file['subject']['reference']){
+																	$checkOn_parameters++;
+																}
+																break;
+															default :
+																break;
+														}
+													}
+													if($checkOn_parameters == (sizeof($scope_parameters))){
+														PostAPI('http://203.64.84.213:8080/hapi-fhir-jpaserver/fhir/'.$json_file['resourceType'],$json_file);
+														//當前socpe參數驗證結束，上傳fhir
+														//echo $json_file['subject']['reference'];
+													}
+													break;
+												case 'Observation':
+													$checkOn_parameters = 0;
+													for($z=0;$z<sizeof($scope_parameters);$z++){
+														switch ($scope_parameters[$z]['0']) {
+															case 'date' :
+																if(substr($scope_parameters[$z]['1'],0,2) == 'gt'){ 
+																	if(strtotime(substr($scope_parameters[$z]['1'],2))<=strtotime(substr($json_file['effectiveDateTime'],2))){
+																		$checkOn_parameters++;
+																	}
+																}else if(substr($scope_parameters[$z]['1'],0,2) == 'lt'){
+																	if(strtotime(substr($scope_parameters[$z]['1'],0,2))>=strtotime(substr($json_file['effectiveDateTime'],2))){
+																		$checkOn_parameters++;
+																	}
+																}
+																$checkOn_parameters++;
+																break;
+															case 'patient' :
+																//檢查scope 病人內容(id是否一樣)、date是否在scope規定的範圍內
+																if($json_file['subject']['reference'] == 'Patient/'.$scope_parameters[$z]['1']){
+																	$checkOn_parameters++;
+																}
+																break;
+															default :
+																break;
+														}
+													}
+													if($checkOn_parameters == (sizeof($scope_parameters))){
+														PostAPI('http://203.64.84.213:8080/hapi-fhir-jpaserver/fhir/'.$json_file['resourceType'],$json_file);
+														//當前socpe參數驗證結束，上傳fhir
+														//echo $json_file['subject']['reference'];
+													}
+													break;
 											}
 										}
 										
 									}
 								}
-							}
-							
-							//print_r($scope['resourceType']);
-							//print_r($scope['subject']['reference']);
-							//PostAPI('http://203.64.84.213:8080/hapi-fhir-jpaserver/fhir/'.$scope['resourceType'],$scope);
-							//echo ($scope['authenication-jwt']);
+							}				
 						}else{
 							echo 'need file';
 						}	
