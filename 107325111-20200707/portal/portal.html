@@ -1,0 +1,41 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Portal</title>
+    <script src="Script/cookie.js"></script>
+    <script src="Script/Authorization token.js"></script>
+    <script src="Script/Cert path.js"></script>
+    <script src="Script/consent.js"></script>
+    <script src="Script/Url.js"></script>
+</head>
+<body>
+    <form action="getAuthorize.php" method="get" target="token">
+        Resource網頁: <input type="text" id="url" name="url">
+        <input type="submit" value="取得授權token">
+    </form>
+    <iframe id="token" name="token" style="" width="600"></iframe>
+    <br><input type="button" onclick="locationherf()" value="前往resource網頁">
+    <script>
+        var resourceurl;
+        function TokenOutPut(url) {
+            var resourceurl;
+            this.location = "getAuthorize.php?url=" + url;
+            //window.location.href = "https://203.64.84.229:8011/FHIR_PHR/getAuthorize.php?url=" + url;
+            //url為resource網域
+        }
+
+        function locationherf() {
+            window.location.href = 'https://203.64.84.229:8011/FHIR_PHR/GoToResource.php';
+        }
+
+        function EraseToken(name) {
+            eraseCookie(name);
+        }
+
+        function reSize() {
+            parent.document.all.frameid.height = document.body.scrollHeight;
+        }
+    </script>
+</body>
+</html>
