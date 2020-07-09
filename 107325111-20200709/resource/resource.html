@@ -1,0 +1,208 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <style type="text/css">
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000 url(春天.jpg) center center fixed no-repeat;
+            background-size: cover;
+        }
+    </style>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>處方籤查詢</title>
+</head>
+<body>
+    <!--初始頁面-->
+    <div id="Welcome" align="center" style="">
+        <fieldset id="WF" align="center" style="
+        width: 800px;
+        height: 700px;
+        border: 5px #cccccc dashed;
+        display: block;
+        color: black;
+        margin: 20px;
+        border-radius:40px;
+        box-shadow:6px 10px 6px #000;
+        background:#EEE;" ;>
+            <textarea id="resourceJ" style="resize:none;width:600px;height:600px;"></textarea>
+            <br>
+            <input type="button" onclick="GateWay('GET','GateWay','MedicationRequest?patient=139&date=gt2020-01-01')" value="GET：MedicationRequest?patient=139&date=gt2020-01-01">
+            <br>
+            <input type="button" onclick="GateWay('POST','GateWay','MedicationRequest')" value="POST：MedicationRequest">
+            <br>
+            <input type="button" onclick="GateWay('DELETE','GateWay','MedicationRequest/244')" value="DELETE：MedicationRequest/244">
+            <br>
+            <input type="button" onclick="GateWay('PUT','GateWay','MedicationRequest/244')" value="PUT：MedicationRequest/244">
+
+        </fieldset>
+    </div>
+
+    <!--查病人-->
+    <div id="Grade" align="center" style="display:none">
+        <fieldset align="center" style="
+        width: 800px;
+        height: 700px;
+        border: 5px #cccccc dashed;
+        display: block;
+        color: black;
+        margin: 20px;
+        border-radius:40px;
+        box-shadow:6px 10px 6px #000;
+        background:#EEE;" ;>
+            <table id="WorkGrade" border="0" align="center" style="margin-top:10px; border: 5px #cccccc dashed;">
+                <tr>
+                    <td width="330" height="30">作業</td>
+                    <td width="330" height="30">成績(7%)</td>
+                </tr>
+            </table>
+            <table id="MidExamGrade" border="0" align="center" style="margin-top:10px; border: 5px #cccccc dashed;">
+                <tr align="center">
+                    <td width="90" height="30">期中考成績(15%)</td>
+                </tr>
+            </table>
+            <table id="FinalExamGrade" border="0" align="center" style="margin-top:10px; border: 5px #cccccc dashed;">
+                <tr align="center">
+                    <td width="90" height="30">期末考成績(30%)</td>
+                </tr>
+            </table>
+            <table id="AddPointsGrade" border="0" align="center" style="margin-top:10px; border: 5px #cccccc dashed;">
+                <tr align="center">
+                    <td width="90" height="30">額外加分</td>
+                </tr>
+            </table>
+            <table id="SumGrade" border="0" align="center" style="margin-top:10px; border: 5px #cccccc dashed;">
+                <tr align="center">
+                    <td width="90" height="30">總分</td>
+                </tr>
+            </table>
+        </fieldset>
+    </div>
+
+    <!--Js函式-->
+    <script src="GetToken.php"></script>
+
+    <script src="cookie.js"></script>
+    <script src="https://code.jquery.com/jquery-1.9.1.min.js"></script>
+    <script>
+        //document.getElementById("index").innerText = token;
+        //setCookie('AuthorizationJwt', token, 1);
+
+        function GateWay(method, PurposeOfUse, requestAPI) { //url type scope authorizationToken //加入post的data
+            switch (method) {
+                case 'GET':
+                    $.ajax({
+                        type: method,
+                        dataType: 'json',
+                        headers: {
+                            'authorization-jwt': getCookie('authorizationToken'),
+                            'method': method
+                        }, 
+                        url: 'https://203.64.84.229:8022/' + PurposeOfUse + '/' + requestAPI,
+                        //https://203.64.84.229:8022/GetWay/MedicationRequest?patient=139
+                        success: function (response) {
+                            alert (response);
+                        },
+                        error: function () {
+                            alert("用戶未擁有授權");
+                        }
+                    });
+                    break;
+                case 'POST':
+                    $.ajax({
+                        type: method,
+                        dataType: 'json',
+                        headers: {
+                            'authorization-jwt': getCookie('authorizationToken'),
+                            'method': method
+                        }, 
+                        data: {
+                            'json': JSON.stringify(JSON.parse(document.getElementById('resourceJ').value))
+                        },//如果是post，欲上傳的json文件放在body中
+                        url: 'https://203.64.84.229:8022/' + PurposeOfUse + '/' + requestAPI,
+                        //https://203.64.84.229:8022/GetWay/MedicationRequest
+                        success: function (response) {
+                            alert (response);
+                        },
+                        error: function () {
+                            alert("用戶未擁有授權");
+                        }
+                    });
+                    break;
+                case 'DELETE':
+                    $.ajax({
+                        type: method,
+                        dataType: 'json',
+                        headers: {
+                            'authorization-jwt': getCookie('authorizationToken'),
+                            'method': method
+                        }, 
+                        url: 'https://203.64.84.229:8022/' + PurposeOfUse + '/' + requestAPI,
+                        //https://203.64.84.229:8022/GetWay/MedicationRequest/244
+                        success: function (response) {
+                            alert (response);
+                        },
+                        error: function () {
+                            alert("用戶未擁有授權");
+                        }
+                    });
+                    break;
+                case 'PUT':
+                    $.ajax({
+                        type: method,
+                        dataType: 'json',
+                        headers: {
+                            'authorization-jwt': getCookie('authorizationToken'),
+                            'method': method
+                        }, 
+                        data: {
+                            'json': JSON.stringify(JSON.parse(document.getElementById('resourceJ').value))
+                        },//如果是post、put，欲上傳的json文件放在body中
+                        url: 'https://203.64.84.229:8022/' + PurposeOfUse + '/' + requestAPI,
+                        //https://203.64.84.229:8022/GetWay/MedicationRequest/244
+                        success: function (response) {
+                            alert (response);
+                        },
+                        error: function () {
+                            alert("用戶未擁有授權");
+                        }
+                    });
+                    break;
+            }    
+        }
+
+         function GetAuthorize() { //取消
+             $.ajax({
+                 type: "GET",
+                 url: "https://203.64.84.229:8011/FHIR_PHR/GetAuthorize.php",
+                 //dataType: "json",
+                 data: { //傳送資料
+                     authenticationToken: 'authenticationToken',
+                     reference: 'http://203.64.84.213:8080/hapi-fhir-jpaserver/fhir/MedicationRequest?patient=139'
+                 },
+                 success: function (response) {
+                     setCookie('authorizationToken', response, 1);
+                     alert(response);
+                 },
+                 error: function(){
+                     alert('request Error');
+                 }
+            })
+        }
+
+        function GetData(Url) { //取消
+            $.ajax({
+                type: "GET",
+                url: Url,
+                
+                success: function (response) {
+                    alert(response['patient']);
+                },
+                error: function(){
+                    alert('request Error');
+                }
+            })
+        }
+    </script>
+</body>
+    </html>
