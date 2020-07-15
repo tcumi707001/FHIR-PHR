@@ -1,0 +1,323 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <style type="text/css">
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000 url(春天.jpg) center center fixed no-repeat;
+            background-size: cover;
+        }
+        style {
+            width: 150px;
+            height: 35px;
+            font-size: 20px;
+            background-color: #FFFFFF;
+            border: 0;
+            color: black;
+            border: 3px #cccccc dashed;
+            border-radius: 20px;
+            margin-top: 20px;
+        }
+    </style>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Portal</title>
+</head>
+<body onload="verifyAuthenication()">
+    <!--側選單-->
+    <fieldset id="Menu" style="background-color: transparent;
+        border: 0">
+
+
+        <div style="        background-color: transparent;
+        border: 0;" canvas="container">
+            <input type="button" class="left-slidebar" value="Menu" style="        width: 100px;
+        height: 50px;
+        font-size: 20px;
+        border: 5px #cccccc dashed;
+        display: block;
+        color: black;
+        margin: 10px;
+        border-radius:20px;
+        box-shadow:6px 7px 6px #000;
+        background:#EEE;">
+        </div>
+
+        <div off-canvas="example-1 left reveal" style="background:#EEE;box-shadow:6px 10px 6px #000;">
+            <ul>
+                <li id="UserName_li" style="        display: block;">
+                    <input type="button" id="UserName" value="用戶名" style="        width: 160px;
+        height: 65px;
+        font-size: 40px;
+        background-color: transparent;
+        border: 0;
+        color: black;
+        border: 3px #cccccc dashed;
+        box-shadow:6px 7px 6px #000;
+        border-radius:10px;
+        margin-top:50px;">
+                </li>
+                <li id="SingOut_li" style="        display: block;">
+                    <input type="button" id="showpatient" value="查病人" onclick="ShowPatient()" style="        width: 190px;
+        height: 65px;
+        font-size: 40px;
+        background-color: transparent;
+        border: 0;
+        color: black;
+        border: 3px #cccccc dashed;
+        box-shadow:6px 7px 6px #000;
+        border-radius:10px;
+        margin-top:20px">
+                </li>
+                <li id="SingOut_li" style="        display: block;">
+                    <input type="button" id="SingOut" value="登出" onclick="SignOut()" style="        width: 130px;
+        height: 65px;
+        font-size: 40px;
+        background-color: transparent;
+        border: 0;
+        color: black;
+        border: 3px #cccccc dashed;
+        box-shadow:6px 7px 6px #000;
+        border-radius:10px;
+        margin-top:20px">
+                </li>
+            </ul>
+        </div>
+    </fieldset>
+
+    <div id="result"></div>
+
+    <!--初始頁面-->
+    <div id="Welcome" align="center" style="">
+        <fieldset id="WF" align="center" style="
+        width: 800px;
+        height: 700px;
+        border: 5px #cccccc dashed;
+        display: block;
+        color: black;
+        margin: 20px;
+        border-radius:40px;
+        box-shadow:6px 10px 6px #000;
+        background:#EEE;" ;>
+            <iframe id="token" name="token" style="" width="600" height="650"></iframe>
+            <form action="verifyAuthenication.php" method="get" target="token">
+                <input type="submit" value="驗證認證token">
+            </form>
+        </fieldset>
+    </div>
+
+    <!--查病人-->
+    <div id="Patient" align="center" style="display:none">
+        <fieldset align="center" style="
+        width: 800px;
+        height: 700px;
+        border: 5px #cccccc dashed;
+        display: block;
+        color: black;
+        margin: 20px;
+        border-radius:40px;
+        box-shadow:6px 10px 6px #000;
+        background:#EEE;" ;>
+            <table id="patientdata" border="0" align="center" style="margin-top:10px; border: 5px #cccccc dashed;">
+                <tr>
+                    <td width="330" height="30">名字</td>
+                    <td width="330" height="30">性別</td>
+                    <td width="330" height="30"></td>
+                    <td width="330" height="30"></td>
+                </tr>
+            </table>
+        </fieldset>
+    </div>
+
+    <!--Js函式-->
+    <script src="Script/cookie.js"></script>
+    <script>
+        var authenication_token= unescape(getCookie("authenicationtoken"));
+        if (authenication_token != "null") {
+            //t_str = t_str.replace(/%3D/g,"=");
+            var NewArray = new Array();
+            NewArray = authenication_token.split(".");
+
+            var JWT_header = JSON.parse(atob(NewArray[0]));
+            var JWT_payload = JSON.parse(atob(NewArray[1]));
+            document.getElementById('UserName').value = JWT_payload['name'];
+        } //portal取得token.payload內容
+
+
+        function ShowPatient() {
+            document.getElementById('Welcome').style = "display: none";
+            document.getElementById('Patient').style = "display: block";
+            DeleteRows("patientdata");
+            GetData("http://203.64.84.213:8080/hapi-fhir-jpaserver/fhir/Patient/139");
+            addpatientdata()
+        }
+
+        function GetData(Url) {
+            $.ajax({
+                type: "GET",
+                url: 'https://203.64.84.229:8011/FHIR_PHR/GetData.php',
+                data: {
+                    'url':Url
+                },
+                success: function (response) {
+                }
+            });
+        }
+
+        function verifyAuthenication(method, PurposeOfUse) {
+            //設定於body的onload事件
+            $.ajax({
+                type: "GET",
+                url: 'verifyAuthenication.php',
+                success: function (response) {
+                    if (response != ' ') { //php 回應false時，client收到為空白
+                        alert("Sccess:身分認證通過");
+                    }else{
+                        alert("Error:認證失敗");
+                        window.location.href = "index.html"; //不能超過2k
+                    }
+                },
+                error: function () {
+                    window.location.href = "index.html"; //不能超過2k
+                }
+            });
+        }
+
+        function acquireAuthorizationToken(method, PurposeOfUse) {
+            let json = { //授權請求設定
+                "authenication-jwt": getCookie('authenicationtoken'),
+                "API": [
+                    {
+                        "method": "GET",
+                        "url": [
+                            "http://203.64.84.213:8080/hapi-fhir-jpaserver/fhir/Patient/139",
+                            "http://203.64.84.213:8080/hapi-fhir-jpaserver/fhir/MedicationRequest?patient=139&date=gt2020-01-01"
+                        ]
+                    },
+                    {
+                        "method": "POST",
+                        "url": [
+                            "http://203.64.84.213:8080/hapi-fhir-jpaserver/fhir/MedicationRequest?patient=139&date=gt2020-01-01"
+                        ]
+                    },
+                    {
+                        "method": "DELETE",
+                        "url": [
+                            "http://203.64.84.213:8080/hapi-fhir-jpaserver/fhir/MedicationRequest?patient=139&date=gt2020-01-01"
+                        ]
+                    },
+                    {
+                        "method": "PUT",
+                        "url": [
+                            "http://203.64.84.213:8080/hapi-fhir-jpaserver/fhir/MedicationRequest?patient=139&date=gt2020-01-01"
+                        ]
+                    }
+                ]
+            }
+
+            $.ajax({
+                type: method, //post
+                data: {
+                    'json': JSON.stringify(json)
+                },
+                url: 'https://203.64.84.229:8011/' + PurposeOfUse,
+                success: function (response) {
+                    if (response != ' ') {
+                        alert(response);
+                        console.log(response);
+                        window.location.href = "https://203.64.84.229:8022/resource.html?token=" + response; //不能超過2k
+                    } else {
+                        alert("Error:認證失敗");
+                        window.location.href = "index.html"; //不能超過2k
+                    }
+                },
+                error: function () {
+                    alert("用戶未擁有授權");
+                }
+            });
+        }
+
+        function GetToken(num) { //傳url、scope(json)、authenticationToken //function GetAuthorizeTokon(url,scope,authenticationToken)
+            $.ajax({
+                type: "GET",
+                url: "GetAuthorize.php",
+                data: { //傳送資料
+                    authenticationToken: getCookie('authenicationtoken'),
+                    reference: btoa(scope) //直接傳scope
+                },
+                success: function (response) {
+                    window.location.href = "https://203.64.84.229:8022/resource.html?token=" + response; //不能超過2k
+                },
+                error: function () {
+                    alert("用戶未擁有授權");
+                }
+            });
+        }
+
+        function SignOut() { //傳url、scope(json)、authenticationToken //function GetAuthorizeTokon(url,scope,authenticationToken)
+            setCookie('authenicationtoken','SignOut',-1);
+            //window.location.href = "index.html";
+        }
+
+        function DeleteRows(TableName) {
+            var Table = document.getElementById(TableName);
+            var Rows = Table.rows.length;
+            if (Rows != 1) {
+                for (i = Rows - 1; i > 0; i--) {
+                    Table.deleteRow(i);
+                }
+            }
+        }
+
+
+        function addpatientdata() {
+            //var work = xmlData.getElementsByTagName("Account")[PhpRe].getElementsByTagName('Work');
+            for (var j = 0; j < 1; j++) {
+                var tab = document.getElementById("patientdata"); //獲得表格
+                var colsNum = tab.rows.item(0).cells.length;   //表格的列數
+
+                var num = document.getElementById("patientdata").rows.length;//表格當前的行數
+                var rownum = num;
+                tab.insertRow(rownum);
+
+                tab.rows[rownum].insertCell(0);//插入列
+                tab.rows[rownum].cells[0].innerHTML = getCookie('patientname');
+
+                tab.rows[rownum].insertCell(1);
+                tab.rows[rownum].cells[1].innerHTML = getCookie('patientgender');
+
+                tab.rows[rownum].insertCell(2);
+                tab.rows[rownum].cells[2].innerHTML = "<input type='button' id='" + 'button' + j + "'  value='查處方紀錄'>";
+
+                var Button = document.getElementById("button" + j);
+                Button.onclick = function () {
+                    acquireAuthorizationToken('POST', 'acquireAuthorizationToken');
+                };
+
+                tab.rows[rownum].insertCell(3);
+                tab.rows[rownum].cells[3].innerHTML = "<input type='button' value='上傳處方紀錄' onclick=''>";
+            }
+        }
+
+        function GoToResource(num) {
+            this.location = "GetAuthorize.php?authenticationToken=" + 'authenticationToken' + "&reference=" + 'http://203.64.84.213:8080/hapi-fhir-jpaserver/fhir/MedicationRequest?patient=' + num; //需要更多資訊
+        }
+    </script>
+
+    <!-- jQuery v1.9.1 -->
+    <script src="https://code.jquery.com/jquery-1.9.1.min.js"></script>
+    <!-- Slidebars v2.0.2 -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/slidebars/2.0.2/slidebars.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/slidebars/2.0.2/slidebars.min.js"></script>
+    <script>
+        /*-------------------側選單控制--------------------*/
+        var controller = new slidebars();
+        controller.init(); // 初始化
+        $(".left-slidebar").on("click", function (event) {
+            event.stopPropagation();
+            controller.toggle("example-1"); // 打開或關閉側欄選單
+        });
+                /*-------------------------------------------------*/
+    </script>
+</body>
+</html>
