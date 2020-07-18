@@ -507,7 +507,7 @@ try{
 														for($z=0;$z<sizeof($scope_parameters);$z++){
 															switch ($scope_parameters[$z]['0']) {
 																//檢查scope 病人內容(id是否一樣)、date是否在scope規定的範圍內
-																case 'effective-DateTime' :
+																case 'effective-time' :
 																	if(substr($scope_parameters[$z]['1'],0,2) == 'gt'){ 
 																		if(strtotime(substr($scope_parameters[$z]['1'],2))<=strtotime(substr($response['effectiveDateTime'],2))){
 																			$checkOn_parameters++;
@@ -519,7 +519,7 @@ try{
 																	}
 																	$checkOn_parameters++;
 																	break;
-																case 'patient' :
+																case 'subject' :
 																	if('Patient/'.$scope_parameters[$z]['1'] == $response['subject']['reference']){
 																		$checkOn_parameters++;
 																	}
@@ -564,6 +564,8 @@ try{
 															//PutAPI('http://203.64.84.213:8080/hapi-fhir-jpaserver/fhir/'.$request_resourcetype.'/',$request_id,$json_file);
 															echo '<PUT>'.$request_resourcetype.'/'.$request_id;
 															print_r($json_file);
+															$response_array = GetAPI($payload['scope'][$i]['url'][$j]);
+															print_r($response_array); //檢查完向FHIR-server取得資料response回client
 														}
 														break;
 												}
