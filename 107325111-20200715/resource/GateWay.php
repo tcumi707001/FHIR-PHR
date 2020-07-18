@@ -113,6 +113,18 @@ try{
 															$checkOn_parameters++;
 														}
 													}
+												}else if($request_parameters[$z]['0'] == 'effective-time' && $scope_parameters[$x]['0'] == 'effective-time'){		
+													//根據時間參數[gt、lt]檢查時間前後
+													if(substr($scope_parameters[$x]['1'],0,2) == 'gt' && substr($request_parameters[$z]['1'],0,2) == 'gt'){ 
+														if(strtotime(substr($scope_parameters[$x]['1'],2))<=strtotime(substr($request_parameters[$z]['1'],2))){
+															$checkOn_parameters++;
+														}
+													}
+													else if(substr($scope_parameters[$x]['1'],0,2) == 'lt' && substr($request_parameters[$z]['1'],0,2) == 'lt'){
+														if(strtotime(substr($scope_parameters[$x]['1'],0,2))>=strtotime(substr($request_parameters[$z]['1'],0,2))){
+															$checkOn_parameters++;
+														}
+													}
 												}else if($request_parameters[$z]['0'] == $scope_parameters[$x]['0'] && $request_parameters[$z]['1'] == $scope_parameters[$x]['1']){ 
 													$checkOn_parameters++;
 												}
