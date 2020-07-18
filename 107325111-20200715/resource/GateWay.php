@@ -215,7 +215,7 @@ try{
 													$checkOn_parameters = 0;
 													for($z=0;$z<sizeof($scope_parameters);$z++){
 														switch ($scope_parameters[$z]['0']) {
-															case 'effective-DateTime' :
+															case 'effective-time' :
 																if(substr($scope_parameters[$z]['1'],0,2) == 'gt'){ 
 																	if(strtotime(substr($scope_parameters[$z]['1'],2))<=strtotime(substr($json_file['effectiveDateTime'],2))){
 																		$checkOn_parameters++;
@@ -227,7 +227,7 @@ try{
 																}
 																$checkOn_parameters++;
 																break;
-															case 'patient' :
+															case 'subject' :
 																//檢查scope 病人內容(id是否一樣)、date是否在scope規定的範圍內
 																if('Patient/'.$scope_parameters[$z]['1'] == $json_file['subject']['reference']){
 																	$checkOn_parameters++;
@@ -359,7 +359,7 @@ try{
 														$checkOn_parameters = 0;
 														for($z=0;$z<sizeof($scope_parameters);$z++){
 															switch ($scope_parameters[$z]['0']) {
-																case 'effective-DateTime' :
+																case 'effective-time' :
 																	if(substr($scope_parameters[$z]['1'],0,2) == 'gt'){ 
 																		if(strtotime(substr($scope_parameters[$z]['1'],2))<=strtotime(substr($response['effectiveDateTime'],2))){
 																			$checkOn_parameters++;
@@ -371,7 +371,7 @@ try{
 																	}
 																	$checkOn_parameters++;
 																	break;
-																case 'patient' :
+																case 'subject' :
 																	//檢查scope 病人內容(id是否一樣)、date是否在scope規定的範圍內
 																	if('Patient/'.$scope_parameters[$z]['1'] == $response['subject']['reference']){
 																		$checkOn_parameters++;
